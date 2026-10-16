@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keenspect</title>
+  <meta name="description" content="Keenspect is a harness that runs a persistent fleet of Claude Code agents under controls built from real incidents.">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Keenspect">
+  <meta property="og:description" content="A harness that runs a persistent fleet of Claude Code agents under controls built from real incidents.">
+  <meta property="og:url" content="https://keenspect.ai/">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b5cad'/%3E%3Cpath d='M10 7v18M10 16l10-9M12.5 14l8.5 11' stroke='white' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="hero">
+    <div class="wrap">
+      <h1>Keenspect</h1>
+      <p class="lede">A harness that runs a persistent fleet of Claude Code agents under controls built from real incidents.</p>
+      <a class="btn" href="https://github.com/keenspect-dev/false-claim-ledger">False-claim ledger on GitHub</a>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section aria-labelledby="what">
+      <h2 id="what">What it is</h2>
+      <ul class="plain">
+        <li><strong>Persistent agents.</strong> Each agent owns one area of work and loops through its own task list: work out what is ready, run subagents, check their output, record progress, schedule the next pass.</li>
+        <li><strong>Isolated checkouts.</strong> Every agent works in its own git checkout, so one agent's edits cannot touch another's.</li>
+        <li><strong>Committed handoffs.</strong> An agent can clear a degraded context and resume where it left off, because its state is in git.</li>
+        <li><strong>A "no new failures" landing gate.</strong> A commit to the shared integration branch is refused if it adds a failing check its parent did not have.</li>
+        <li><strong>An owner dashboard.</strong> It ranks the decisions that need a human, in a fixed format: context, options, recommendation, cost of not answering.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="incidents">
+      <h2 id="incidents">Controls built from incidents</h2>
+      <p class="intro">Each control exists because something went wrong first.</p>
+      <ul class="cards">
+        <li class="card">
+          <h3>Destroyed a sibling's work</h3>
+          <p><span class="label">Incident</span>An agent undid its own edit with a file-level git revert and wiped about 112 lines of another agent's unsaved work in the same checkout (September 2026).</p>
+          <p><span class="label">Control</span>Every concurrent writer is isolated in its own checkout by default, and a fence refuses writes into another agent's checkout.</p>
+        </li>
+        <li class="card">
+          <h3>False claims at scale</h3>
+          <p><span class="label">Incident</span>In one month, 38 agent claims were later shown false by measurement. 16 were caught only by the human owner.</p>
+          <p><span class="label">Control</span>A false-claim ledger records each one with its root cause and requires a lasting fix, often a tool that refuses to report a number from an unproven query.</p>
+        </li>
+        <li class="card">
+          <h3>A wait loop that matched itself</h3>
+          <p><span class="label">Incident</span>Agents wrote wait loops that matched their own process and never exited. One ran 4 hours 50 minutes and blocked a fleet restart.</p>
+          <p><span class="label">Control</span>The shell guard hook now refuses the pattern.</p>
+        </li>
+        <li class="card">
+          <h3>Process exhaustion</h3>
+          <p><span class="label">Incident</span>A test an agent ran called itself recursively and spawned about 40,000 processes until the machine could not fork (October 2026). Agents died.</p>
+          <p><span class="label">Control</span>Test stubs refuse to call themselves, and test runs need a machine-wide lock.</p>
+        </li>
+        <li class="card">
+          <h3>Production deleted</h3>
+          <p><span class="label">Incident</span>An agent wrote a combined "identify then delete" cleanup and misidentified the production deployment as a stale duplicate (June 2026, before launch, near-zero damage).</p>
+          <p><span class="label">Control</span>Destructive steps must be gated on a separate step that positively identifies the environment. This is a process rule, not code.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="numbers">
+      <h2 id="numbers">Numbers</h2>
+      <p class="intro">As of October 2026.</p>
+      <dl class="stats">
+        <div class="stat"><dt>in use</dt><dd>about 5.7 months</dd></div>
+        <div class="stat"><dt>commits</dt><dd>about 26k</dd></div>
+        <div class="stat"><dt>false claims in one month</dt><dd>38</dd></div>
+        <div class="stat"><dt>caught only by the owner</dt><dd>16</dd></div>
+        <div class="stat"><dt>with a lasting fix landed</dt><dd>27 of 38</dd></div>
+        <div class="stat"><dt>most common cause: measuring a proxy</dt><dd>11</dd></div>
+      </dl>
+      <p class="note">Gate rejection rate is not measured. The counts come from an audit of the codebase, git history and logs.</p>
+    </section>
+
+    <section aria-labelledby="open">
+      <h2 id="open">Open problems</h2>
+      <p class="intro">What is not solved. Oversight here works by reporting up and stepping in, not by humans reviewing code before it lands. That gap is a research question in itself.</p>
+      <ol class="problems">
+        <li><strong>Agents hold working credentials by design.</strong> It is a deliberate trade-off. The open question is how to bound what an agent can do with them.</li>
+        <li><strong>Guards that match command text are brittle.</strong> The same action passes once it is wrapped in a script or reached through a non-shell tool.</li>
+        <li><strong>Agents can edit the controls.</strong> Tamper logging detects changes but does not prevent them, and its noise hides real signals.</li>
+        <li><strong>Network containment is unconfirmed.</strong> Egress filtering is designed and partly built, not confirmed active.</li>
+        <li><strong>Correlated review.</strong> Every reviewer is the same model family, so there is no independent check.</li>
+        <li><strong>Approval fatigue.</strong> Permission prompts are only as strong as human attention, and agents learn to route around them.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>&copy; 2026 Keenspect &middot; <a href="https://github.com/keenspect-dev/false-claim-ledger">github.com/keenspect-dev/false-claim-ledger</a></p>
+    </div>
+  </footer>
+</body>
+</html>
